@@ -25,3 +25,6 @@ if st.button("予想を表示"):
     else:
         for p in horse_predictions:
             st.write(p)
+
+st.markdown("---")  # 横線（区切り線）
+st.write("制作者 日本トップワールド　小島崇彦")
