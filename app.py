@@ -1,38 +1,27 @@
 import streamlit as st
-from datetime import datetime
 
-# 予想リスト（好きに増やせます）
-predictions = [
+# 予想リスト（競艇と競馬の例）
+boat_predictions = [
     "桐生 12R：1-2-3 本命 ◎",
     "住之江 10R：3-1-6 穴狙い △",
-    "浜名湖 9R：2-4-1 安定狙い ○",
-    "若松 8R：1-3-5 チャンスあり ☆",
-    "多摩川 7R：4-2-1 人気集中 ▲",
+    "浜名湖 9R：2-4-1 安定狙い ○"
 ]
 
-# タイトル表示
-st.title("賭神様｜競艇AI予想")
+horse_predictions = [
+    "東京 5R：2-4-5 本命 ◎",
+    "中山 7R：1-3-6 穴狙い △",
+    "阪神 9R：4-5-1 安定狙い ○"
+]
 
-# 今の時刻を取得
-now = datetime.now()
+st.title("賭神様｜AI予想")
 
-# 時刻の「分」を使って表示する予想を切り替える
-minute = now.minute
-index = minute % len(predictions)
-current_prediction = predictions[index]
+# 競艇 or 競馬を選択するボタン
+mode = st.radio("予想を選んでください", ("競艇", "競馬"))
 
-# 時刻を画面に表示
-st.write(f"現在時刻: {now.strftime('%H:%M:%S')}")
-
-# 予想を画面に表示
-st.markdown(f"### 今日の予想:\n\n{current_prediction}")
-
-# 10秒ごとにページを自動リロードして予想を更新する
-st.markdown(
-    """
-    <script>
-    setTimeout(function(){
-        window.location.reload(1);
-    }, 10000);
-    </script>
-    """, unsafe_allow_html=True)
+if st.button("予想を表示"):
+    if mode == "競艇":
+        for p in boat_predictions:
+            st.write(p)
+    else:
+        for p in horse_predictions:
+            st.write(p)
