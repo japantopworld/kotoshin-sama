@@ -1,68 +1,66 @@
-# このコードは Streamlit 環境専用です。ローカルまたは Streamlit Cloud 上で実行してください。
+# 🚀 BOATRACE 出走表 自動取得＆一覧表示（Streamlit版）
 
-try:
-    import streamlit as st
-    from datetime import datetime, timedelta
-    import pandas as pd
-    import random
+import streamlit as st
+import pandas as pd
+import requests
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
 
-    # ページ設定とタイトル
-    st.set_page_config(page_title="賭神様｜AI予想", layout="centered")
-    st.title("賭神様｜AI予想")
+# ページ設定
+st.set_page_config(page_title="BOATRACE 出走表", layout="wide")
+st.title("🛥 BOATRACE｜本日の全出走表（公式自動取得）")
 
-    # 現在の日本時刻を表示
-    now = datetime.utcnow() + timedelta(hours=9)
-    st.markdown(f"### 現在の日本時刻：{now.strftime('%Y-%m-%d %H:%M:%S')}")
+# 日付選択（本日・翌日）
+today = datetime.utcnow() + timedelta(hours=9)
+tomorrow = today + timedelta(days=1)
+date_option = st.selectbox("📅 日付を選んでください", [
+    today.strftime("%Y-%m-%d"),
+    tomorrow.strftime("%Y-%m-%d")
+])
 
-    # 日付選択（本日と翌日の選択）
-    today = datetime.utcnow() + timedelta(hours=9)
-    tomorrow = today + timedelta(days=1)
-    date_option = st.selectbox("日付を選択", [
-        today.strftime("%Y-%m-%d"),
-        tomorrow.strftime("%Y-%m-%d")
-    ])
+# 会場一覧（必要に応じて追加）
+courses = {
+    "桐生": "01", "戸田": "02", "江戸川": "03", "平和島": "04", "多摩川": "05",
+    "浜名湖": "06", "蒲郡": "07", "常滑": "08", "津": "09", "三国": "10",
+    "びわこ": "11", "住之江": "12", "尼崎": "13", "鳴門": "14", "丸亀": "15",
+    "児島": "16", "宮島": "17", "徳山": "18", "下関": "19", "若松": "20",
+    "芦屋": "21", "福岡": "22", "唐津": "23", "大村": "24"
+}
 
-    # レース場リスト（競艇・競馬）
-    boat_race_courses = [
-        "桐生", "戸田", "江戸川", "平和島", "多摩川",
-        "浜名湖", "蒲郡", "常滑", "津", "三国",
-        "びわこ", "住之江", "尼崎", "鳴門", "丸亀",
-        "児島", "宮島", "徳山", "下関", "若松", "芦屋", "福岡", "唐津", "大村"
-    ]
-    horse_race_courses = ["東京", "中山", "京都", "阪神", "中京", "小倉", "新潟", "福島", "札幌", "函館"]
+# 出走表取得関数
+def get_race_data(yyyyMMdd, course_id, course_name):
+    dfs = []
+    for race_no in range(1, 13):
+        url = f"https://www.boatrace.jp/owpc/pc/race/racelist?rno={race_no}&jcd={course_id}&hd={yyyyMMdd}"
+        res = requests.get(url)
+        soup = BeautifulSoup(res.content, "html.parser")
+        
+        table = soup.find("table", class_="is-w495")
+        if not table:
+            continue
 
-    # モード選択
-    mode = st.radio("予想を選んでください", ("競艇", "競馬"))
+        rows = table.find_all("tr")
+        race_data = []
+        for row in rows[1:]:
+            cols = [col.text.strip() for col in row.find_all("td")]
+            if cols:
+                race_data.append(cols)
 
-    # レース場とレース番号選択
-    if mode == "競艇":
-        race_course = st.selectbox("競艇レース場を選択", boat_race_courses)
-        race_nums = [f"{i}R" for i in range(1, 13)]
-    else:
-        race_course = st.selectbox("競馬場を選択", horse_race_courses)
-        race_nums = [f"{i}R" for i in range(1, 13)]
+        if race_data:
+            df = pd.DataFrame(race_data, columns=["枠番", "選手名", "年齢", "体重", "支部", "勝率", "展示", "進入", "ST"], dtype=str)
+            df.insert(0, "レース", f"{course_name} {race_no}R")
+            dfs.append(df)
+    return pd.concat(dfs, ignore_index=True) if dfs else None
 
-    # 予想実行ボタン
-    if st.button("AI予想を表示"):
-        predictions = []
-        for race_number in race_nums:
-            prob = round(random.gauss(60, 15), 1)  # 平均60%、標準偏差15%
-            prob = max(0, min(100, prob))          # 0～100%に制限
-            predictions.append({
-                "レース場": race_course,
-                "レース番号": race_number,
-                "的中確率予想": f"{prob} %"
-            })
+# 全会場ループして出走表を表示
+yyyyMMdd = date_option.replace("-", "")
+for name, cid in courses.items():
+    with st.expander(f"📍 {name} の出走表を表示"):
+        df = get_race_data(yyyyMMdd, cid, name)
+        if df is not None:
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.warning(f"{name} の出走表がまだ公開されていないか、取得できませんでした。")
 
-        df = pd.DataFrame(predictions)
-        st.table(df)
-
-    # クレジット
-    st.markdown("---")
-    st.markdown("制作：日本トップワールド　小島崇彦")
-
-except ModuleNotFoundError as e:
-    import sys
-    sys.stderr.write("\nこのコードを実行するには Streamlit ライブラリが必要です。'pip install streamlit' を使ってインストールしてください。\n")
-    sys.stderr.write(f"エラー詳細: {e}\n")
-
+st.markdown("---")
+st.caption("制作：日本トップワールド 小島崇彦｜データ提供：BOATRACE公式")
