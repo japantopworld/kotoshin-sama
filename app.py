@@ -1,75 +1,49 @@
-# 🚀 BOATRACE 出走表 自動取得＆一覧表示（Streamlit版）
+# 🎯 賭神様 - AI予想アプリ ホーム画面
 
 import streamlit as st
-import pandas as pd
-import requests
 from datetime import datetime, timedelta
-from bs4 import BeautifulSoup
 
 # ページ設定
-st.set_page_config(page_title="BOATRACE 出走表", layout="wide")
-st.title("🛥 BOATRACE｜本日の出走表（公式自動取得）")
+st.set_page_config(page_title="賭神様｜AI予想アプリ", layout="centered")
 
-# 日付選択（本日・翌日）
-today = datetime.utcnow() + timedelta(hours=9)
-tomorrow = today + timedelta(days=1)
-date_option = st.selectbox("📅 日付を選んでください", [
-    today.strftime("%Y-%m-%d"),
-    tomorrow.strftime("%Y-%m-%d")
-])
+st.title("🎯 賭神様 - AI予想アプリ")
+now = datetime.utcnow() + timedelta(hours=9)
+st.markdown(f"🕒 現在の時刻：**{now.strftime('%Y年%m月%d日 %H:%M:%S')}**（日本時間）")
 
-# 会場一覧
-courses = {
-    "桐生": "01", "戸田": "02", "江戸川": "03", "平和島": "04", "多摩川": "05",
-    "浜名湖": "06", "蒲郡": "07", "常滑": "08", "津": "09", "三国": "10",
-    "びわこ": "11", "住之江": "12", "尼崎": "13", "鳴門": "14", "丸亀": "15",
-    "児島": "16", "宮島": "17", "徳山": "18", "下関": "19", "若松": "20",
-    "芦屋": "21", "福岡": "22", "唐津": "23", "大村": "24"
-}
+# 注意事項
+st.markdown("### 📌 注意事項")
+st.info("""
+- 本アプリはあくまで参考予想です。的中や損益を保証するものではありません。
+- 20歳未満の方は公営ギャンブルに参加できません。
+- 予想結果の利用は自己責任でお願いします。
+""")
 
-# 出走表取得関数
-def get_race_data(yyyyMMdd, course_id, course_name):
-    dfs = []
-    for race_no in range(1, 13):
-        url = f"https://www.boatrace.jp/owpc/pc/race/racelist?rno={race_no}&jcd={course_id}&hd={yyyyMMdd}"
-        res = requests.get(url)
-        soup = BeautifulSoup(res.content, "html.parser")
+# 同意チェック
+agree = st.checkbox("上記の注意事項に同意します")
+if agree:
+    st.success("✅ 同意が確認されました。以下から予想を開始してください。")
 
-        table = soup.find("table", class_="is-w495")
-        if not table:
-            continue
+    st.markdown("### 🚀 予想したい競技を選んでください")
 
-        rows = table.find_all("tr")
-        race_data = []
-        for row in rows[1:]:
-            cols = [col.text.strip() for col in row.find_all("td")]
-            if cols:
-                race_data.append(cols)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("🛥 競艇"):
+            st.switch_page("pages/kyotei.py")
+        if st.button("🏍 オートレース"):
+            st.switch_page("pages/auto.py")
 
-        if race_data:
-            df = pd.DataFrame(race_data, columns=["枠番", "選手名", "年齢", "体重", "支部", "勝率", "展示", "進入", "ST"], dtype=str)
-            df.insert(0, "レース", f"{course_name} {race_no}R")
-            dfs.append(df)
-    return pd.concat(dfs, ignore_index=True) if dfs else None
+    with col2:
+        if st.button("🏇 競馬"):
+            st.switch_page("pages/keiba.py")
+        if st.button("🚲 競輪"):
+            st.switch_page("pages/keirin.py")
 
-# 会場選択と表示制御
-yyyyMMdd = date_option.replace("-", "")
-selected_course = st.selectbox("🏟 会場を選んでください", list(courses.keys()))
-cid = courses[selected_course]
+    with col3:
+        if st.button("⚡ ピストシックス"):
+            st.switch_page("pages/pist6.py")
+else:
+    st.warning("⚠️ 利用には注意事項への同意が必要です。")
 
-if st.button("📥 出走表を取得する"):
-    with st.expander(f"📍 {selected_course} の出走表を表示"):
-        df = get_race_data(yyyyMMdd, cid, selected_course)
-        if df is not None:
-            st.dataframe(
-                df.style.set_table_styles([
-                    {'selector': 'th', 'props': [('text-align', 'center')]},
-                    {'selector': 'td', 'props': [('text-align', 'center'), ('font-family', 'monospace')]}
-                ]),
-                use_container_width=True
-            )
-        else:
-            st.warning(f"{selected_course} の出走表がまだ公開されていないか、取得できませんでした。")
-
+# フッター
 st.markdown("---")
-st.caption("制作：日本トップワールド 小島崇彦｜データ提供：BOATRACE公式")
+st.caption("制作：日本トップワールド 小島崇彦｜Powered by Streamlit")
