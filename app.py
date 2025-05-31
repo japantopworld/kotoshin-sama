@@ -43,7 +43,10 @@ race_number = st.selectbox("レース番号を選択", race_nums)
 # 予想表示ボタン
 if st.button("AI予想を表示"):
     # ランダムな予想（簡易AI）
-    numbers = random.sample(range(1, 7), 3)
+    if mode == "競艇":
+        numbers = random.sample(range(1, 7), 3)
+    else:
+        numbers = random.sample(range(1, 18), 3)
     marks = ["◎", "○", "▲", "△"]
     mark = random.choice(marks)
     prediction = f"{race_course} {race_number}：{numbers[0]}-{numbers[1]}-{numbers[2]} 本命 {mark}"
