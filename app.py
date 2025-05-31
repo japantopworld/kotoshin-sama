@@ -21,9 +21,15 @@ try:
     # モード選択：競艇 or 競馬
     mode = st.radio("モードを選択", ("競艇", "競馬"))
 
-    # レース場とレース番号
-    boat_courses = ["桐生", "住之江", "浜名湖"]
-    horse_courses = ["東京", "中山", "阪神"]
+    # 競艇場（全国24場）・競馬場
+    boat_courses = [
+        "桐生", "戸田", "江戸川", "平和島", "多摩川",
+        "浜名湖", "蒲郡", "常滑",
+        "津", "三国", "びわこ", "住之江", "尼崎",
+        "鳴門", "丸亀", "児島", "宮島", "徳山",
+        "下関", "若松", "芦屋", "福岡", "唐津", "大村"
+    ]
+    horse_courses = ["東京", "中山", "阪神", "京都", "小倉", "札幌", "函館", "新潟", "福島", "中京"]
 
     if mode == "競艇":
         course = st.selectbox("競艇場を選択", boat_courses)
@@ -32,10 +38,11 @@ try:
         course = st.selectbox("競馬場を選択", horse_courses)
         max_horses = 18
 
+    # レース番号
     race_nums = [f"{i}R" for i in range(1, 13)]
     race_number = st.selectbox("レース番号を選択", race_nums)
 
-    # 出走表（簡易サンプル）
+    # 出走表（仮データ）
     def get_dummy_entries(n):
         return [f"{i}号艇（選手{i}）" for i in range(1, n+1)]
 
