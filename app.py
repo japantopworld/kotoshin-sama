@@ -9,51 +9,46 @@ import random
 logo_url = "https://raw.githubusercontent.com/japantopworld/kotoshin-sama/main/%E9%A6%AC%E3%81%A8%E6%B3%A2%E3%81%AE%E7%A5%9E%E7%B4%8B.png"
 response = requests.get(logo_url)
 logo_image = Image.open(BytesIO(response.content))
-
-# ✅ ロゴを表示
 st.image(logo_image, use_container_width=True)
 
-# タイトル
-st.markdown("<h1 style='text-align: center; font-size: 36px;'>賭神様｜AI予想</h1>", unsafe_allow_html=True)
-
-# 🔁 現在の日本時刻を表示
+# タイトルと現在時刻
+st.title("賭神様｜AI予想")
 now = datetime.utcnow() + timedelta(hours=9)
-st.markdown(f"<p style='text-align: right; font-size: 18px;'>現在の日本時刻：{now.strftime('%Y-%m-%d %H:%M:%S')}</p>", unsafe_allow_html=True)
+st.markdown(f"### 現在の日本時刻：{now.strftime('%Y-%m-%d %H:%M:%S')}")
 
-# ===== 出走表データの例（実際にはAPIまたはスクレイピングが必要） =====
-boat_races = {
-    "桐生": ["12R", "11R", "10R"],
-    "住之江": ["12R", "9R"],
-    "浜名湖": ["9R", "8R"]
-}
+# 日付選択（本日と翌日の選択）
+today = datetime.utcnow() + timedelta(hours=9)
+tomorrow = today + timedelta(days=1)
+date_option = st.selectbox("日付を選択", [
+    today.strftime("%Y-%m-%d"),
+    tomorrow.strftime("%Y-%m-%d")
+])
 
-horse_races = {
-    "東京": ["5R", "6R"],
-    "中山": ["7R", "8R"],
-    "阪神": ["9R"]
-}
+# レース場選択（例）
+boat_race_courses = ["桐生", "住之江", "浜名湖"]
+horse_race_courses = ["東京", "中山", "阪神"]
 
-# 競艇 or 競馬を選択
+# 競艇 or 競馬
 mode = st.radio("予想を選んでください", ("競艇", "競馬"))
 
-# レース場選択
-venue = st.selectbox("レース場を選んでください", list(boat_races.keys()) if mode == "競艇" else list(horse_races.keys()))
+if mode == "競艇":
+    race_course = st.selectbox("競艇レース場を選択", boat_race_courses)
+    race_nums = [f"{i}R" for i in range(1, 13)]
+else:
+    race_course = st.selectbox("競馬場を選択", horse_race_courses)
+    race_nums = [f"{i}R" for i in range(1, 13)]
 
-# レース番号選択
-race_list = boat_races[venue] if mode == "競艇" else horse_races[venue]
-race = st.selectbox("レース番号を選んでください", race_list)
+race_number = st.selectbox("レース番号を選択", race_nums)
 
-# 📊 簡易AI予想の例（ランダム）
-def simple_ai_prediction():
-    heads = list(range(1, 7)) if mode == "競艇" else list(range(1, 9))
-    choice = random.sample(heads, 3)
+# 予想表示ボタン
+if st.button("AI予想を表示"):
+    # ランダムな予想（簡易AI）
+    numbers = random.sample(range(1, 7), 3)
     marks = ["◎", "○", "▲", "△"]
-    return f"{venue} {race}：{'-'.join(map(str, choice))} 本命 {random.choice(marks)}"
+    mark = random.choice(marks)
+    prediction = f"{race_course} {race_number}：{numbers[0]}-{numbers[1]}-{numbers[2]} 本命 {mark}"
+    st.success(prediction)
 
-# 表示ボタン
-if st.button("予想を表示"):
-    st.markdown(f"<div style='font-size: 24px;'>{simple_ai_prediction()}</div>", unsafe_allow_html=True)
-
-# クレジット
+# クレジット表示
 st.markdown("---")
-st.markdown("<p style='text-align: center;'>制作：日本トップワールド　小島崇彦</p>", unsafe_allow_html=True)
+st.markdown("制作：日本トップワールド　小島崇彦")
