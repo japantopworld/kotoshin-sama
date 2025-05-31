@@ -8,18 +8,18 @@ from io import BytesIO
 logo_url = "https://raw.githubusercontent.com/japantopworld/kotoshin-sama/main/%E9%A6%AC%E3%81%A8%E6%B3%A2%E3%81%AE%E7%A5%9E%E7%B4%8B.png"
 response = requests.get(logo_url)
 logo_image = Image.open(BytesIO(response.content))
-
-# ✅ ロゴを表示（非推奨の use_column_width の代わりに use_container_width を使用）
 st.image(logo_image, use_container_width=True)
 
 # タイトル
 st.title("賭神様｜AI予想")
 
-# 🔁 現在の日本時刻を表示
+# 🔁 現在の日本時刻を表示（動作確認のためログ出力も追加）
 now = datetime.utcnow() + timedelta(hours=9)
-st.markdown(f"### 現在の日本時刻：{now.strftime('%Y-%m-%d %H:%M:%S')}")
+jst_time_str = now.strftime('%Y-%m-%d %H:%M:%S')
+st.markdown(f"### 現在の日本時刻：{jst_time_str}")
+st.caption("日本時間が正しく表示されない場合はページを再読み込みしてください。")
 
-# 予想データ（例）
+# 予想データ
 boat_predictions = [
     "桐生 12R：1-2-3 本命 ◎",
     "住之江 10R：3-1-6 穴狙い △",
