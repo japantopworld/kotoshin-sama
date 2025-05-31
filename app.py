@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 # ページ設定
 st.set_page_config(page_title="BOATRACE 出走表", layout="wide")
-st.title("🛥 BOATRACE｜本日の全出走表（公式自動取得）")
+st.title("🛥 BOATRACE｜本日の出走表（公式自動取得）")
 
 # 日付選択（本日・翌日）
 today = datetime.utcnow() + timedelta(hours=9)
@@ -18,16 +18,13 @@ date_option = st.selectbox("📅 日付を選んでください", [
     tomorrow.strftime("%Y-%m-%d")
 ])
 
-# 会場一覧（拡充済み）
+# 会場一覧
 courses = {
     "桐生": "01", "戸田": "02", "江戸川": "03", "平和島": "04", "多摩川": "05",
     "浜名湖": "06", "蒲郡": "07", "常滑": "08", "津": "09", "三国": "10",
     "びわこ": "11", "住之江": "12", "尼崎": "13", "鳴門": "14", "丸亀": "15",
     "児島": "16", "宮島": "17", "徳山": "18", "下関": "19", "若松": "20",
-    "芦屋": "21", "福岡": "22", "唐津": "23", "大村": "24",
-    "桜本": "25", "洞海": "26", "小戸": "27", "徳重": "28", "谷山": "29",
-    "新門司": "30", "柳川": "31", "熊本": "32", "荒尾": "33", "宮崎": "34",
-    "佐賀": "35", "長崎": "36", "鹿児島": "37", "那覇": "38"
+    "芦屋": "21", "福岡": "22", "唐津": "23", "大村": "24"
 }
 
 # 出走表取得関数
@@ -55,16 +52,24 @@ def get_race_data(yyyyMMdd, course_id, course_name):
             dfs.append(df)
     return pd.concat(dfs, ignore_index=True) if dfs else None
 
-# 全会場ループして出走表を表示
+# 会場選択と表示制御
 yyyyMMdd = date_option.replace("-", "")
-for name, cid in courses.items():
-    with st.expander(f"📍 {name} の出走表を表示"):
-        df = get_race_data(yyyyMMdd, cid, name)
+selected_course = st.selectbox("🏟 会場を選んでください", list(courses.keys()))
+cid = courses[selected_course]
+
+if st.button("📥 出走表を取得する"):
+    with st.expander(f"📍 {selected_course} の出走表を表示"):
+        df = get_race_data(yyyyMMdd, cid, selected_course)
         if df is not None:
-            st.table(df)  # ← ここをdataframe→tableに変更
+            st.dataframe(
+                df.style.set_table_styles([
+                    {'selector': 'th', 'props': [('text-align', 'center')]},
+                    {'selector': 'td', 'props': [('text-align', 'center'), ('font-family', 'monospace')]}
+                ]),
+                use_container_width=True
+            )
         else:
-            st.warning(f"{name} の出走表がまだ公開されていないか、取得できませんでした。")
+            st.warning(f"{selected_course} の出走表がまだ公開されていないか、取得できませんでした。")
 
 st.markdown("---")
 st.caption("制作：日本トップワールド 小島崇彦｜データ提供：BOATRACE公式")
-
