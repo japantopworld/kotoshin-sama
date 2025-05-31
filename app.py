@@ -10,17 +10,15 @@ logo_url = "https://raw.githubusercontent.com/japantopworld/kotoshin-sama/main/%
 response = requests.get(logo_url)
 logo_image = Image.open(BytesIO(response.content))
 
-# ロゴ表示
-st.image(logo_image, use_column_width=True)
+# ✅ ロゴ表示（非推奨のuse_column_widthの代わりに use_container_width を使用）
+st.image(logo_image, use_container_width=True)
+
 st.title("賭神様｜AI予想")
 
 # 🔁 現在時刻（日本時間）をリアルタイムで表示
 with st.empty():
-    while True:
-        now = datetime.utcnow() + timedelta(hours=9)
-        st.markdown(f"### 現在の日本時刻：{now.strftime('%Y-%m-%d %H:%M:%S')}")
-        time.sleep(1)
-        break  # ←1回表示したら止める（無限ループ防止）
+    now = datetime.utcnow() + timedelta(hours=9)
+    st.markdown(f"### 現在の日本時刻：{now.strftime('%Y-%m-%d %H:%M:%S')}")
 
 # 予想データ
 boat_predictions = [
