@@ -1,3 +1,5 @@
+# 🔮 完全版：競艇AI予想（出走表＋全レース表示＋現在時刻＋開催地）
+
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
@@ -5,56 +7,76 @@ import random
 from datetime import datetime
 
 st.set_page_config(page_title="競艇AI予想", layout="wide")
-st.title("🚤 競艇AI予想 - 出走表＋予想結果")
 
-# 日付選択
-selected_date = st.date_input("表示する日付を選択", datetime.today())
-today_str = selected_date.strftime("%Y%m%d")
+# --- 設定 ---
+TODAY = datetime.now().strftime("%Y%m%d")
+BASE_URL = f"https://www.boatrace.jp/owpc/pc/race/raceindex?hd={TODAY}"
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-# URL設定（動的＋ヘッダーつき）
-TODAY_URL = f"https://www.boatrace.jp/owpc/pc/race/raceindex?hd={today_str}"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-}
+# --- ヘッダー ---
+st.title("🚤 競艇AI予想 - 出走表＋予想")
+now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+st.sidebar.write(f"🕐 現在時刻：{now}")
 
-# 仮の選手名（データ取得に失敗した場合）
-dummy_players = ["今垣光太郎", "白井英治", "峰竜太", "毒島誠", "瓜生正義", "平本真之"]
-
-# 出走表取得
-def get_race_table():
+# --- 開催地名を取得 ---
+def get_place_name():
     try:
-        response = requests.get(TODAY_URL, headers=HEADERS)
-        soup = BeautifulSoup(response.content, "html.parser")
+        res = requests.get(BASE_URL, headers=HEADERS)
+        soup = BeautifulSoup(res.content, "html.parser")
+        title = soup.select_one("h2.heading02")
+        return title.text.strip() if title else "開催地不明"
+    except:
+        return "取得失敗"
 
-        # 仮：選手名のHTML構造が複雑なので、今は仮データ
-        race_data = {
-            "レース名": "第1R 予選（仮）",
-            "選手": dummy_players
-        }
-        return race_data
-    except Exception as e:
-        return {"エラー": str(e)}
+# --- レースリンクを取得（全R）---
+def get_race_links():
+    try:
+        res = requests.get(BASE_URL, headers=HEADERS)
+        soup = BeautifulSoup(res.content, "html.parser")
+        links = soup.select("ul.race_num li a")
+        race_urls = ["https://www.boatrace.jp" + link["href"] for link in links]
+        return race_urls
+    except:
+        return []
 
-# AI予想（仮）
-def predict_ai(players):
-    shuffled = players.copy()
-    random.shuffle(shuffled)
-    return f"🎯 予想：{shuffled[0]} → {shuffled[1]} → {shuffled[2]}"
+# --- 出走表取得 ---
+def get_race_info(url):
+    try:
+        res = requests.get(url, headers=HEADERS)
+        soup = BeautifulSoup(res.content, "html.parser")
 
-# 表示
-data = get_race_table()
+        race_name = soup.select_one("div.race_title h3")
+        race_title = race_name.text.strip() if race_name else "レース名不明"
 
-if "エラー" in data:
-    st.error(f"⚠️ 出走表の取得に失敗しました：{data['エラー']}")
-    st.caption(f"URL: {TODAY_URL}")
+        rows = soup.select("table.boatRaceMembersTable tbody tr")
+        players = [td.text.strip() for row in rows for td in row.select("td.is-name")]
+        return race_title, players
+    except:
+        return "取得エラー", []
+
+# --- 仮AI予想（ランダム3連単） ---
+def predict(players):
+    if len(players) < 3:
+        return "予想不可"
+    pick = players.copy()
+    random.shuffle(pick)
+    return f"🎯 予想：{pick[0]} → {pick[1]} → {pick[2]}"
+
+# --- メイン表示 ---
+st.header(f"📍 開催地：{get_place_name()}")
+
+race_urls = get_race_links()
+
+if not race_urls:
+    st.error("⚠️ 出走表データを取得できませんでした。")
 else:
-    st.subheader(data["レース名"])
-    st.write("### 🚩 出走表")
-    for i, player in enumerate(data["選手"], start=1):
-        st.write(f"{i}号艇：{player}")
-
-    st.write("### 🤖 AI予想")
-    prediction = predict_ai(data["選手"])
-    st.success(prediction)
-
-    st.caption("※予想は仮ロジックです。今後AIモデルに進化予定。")
+    for url in race_urls:
+        race_title, players = get_race_info(url)
+        st.subheader(f"📝 {race_title}")
+        if players:
+            for i, p in enumerate(players, 1):
+                st.write(f"{i}号艇：{p}")
+            st.success(predict(players))
+        else:
+            st.warning("選手情報を取得できませんでした。")
+        st.markdown("---")
