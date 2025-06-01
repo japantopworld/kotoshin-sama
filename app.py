@@ -1,15 +1,15 @@
 import streamlit as st
 from datetime import datetime
-import time
+import pytz
 
-st.set_page_config(page_title="賭神様 - スタートメニュー", layout="centered")
+# 日本時間を取得（JST）
+jst = pytz.timezone("Asia/Tokyo")
+now = datetime.now(jst)
+now_str = now.strftime("%Y/%m/%d %H:%M:%S")
 
+st.set_page_config(page_title="賭神様 - スタートメニュー", layout="wide")
 st.title("🎌 賭神様 - スタートメニュー")
+st.markdown(f"🕒 現在時刻（日本時間）: {now_str}")
 
-# --- 現在時刻を定期的に更新 ---
-placeholder = st.empty()
-
-for _ in range(1000):  # ループ回数（多めでOK）
-    now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    placeholder.markdown(f"🕒 **現在時刻（日本時間）:** {now}")
-    time.sleep(1)
+st.markdown("---")
+st.markdown("👈 左のメニューから「競艇AI予想」を選んでください")
