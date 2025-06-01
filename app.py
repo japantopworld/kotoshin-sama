@@ -1,49 +1,49 @@
-# 🎯 賭神様 - AI予想アプリ ホーム画面
-
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # ページ設定
-st.set_page_config(page_title="賭神様｜AI予想アプリ", layout="centered")
+st.set_page_config(page_title="賭神様｜予想AIスタート", layout="centered")
+st.title("🎌 賭神様 - スタートメニュー")
 
-st.title("🎯 賭神様 - AI予想アプリ")
-now = datetime.utcnow() + timedelta(hours=9)
-st.markdown(f"🕒 現在の時刻：**{now.strftime('%Y年%m月%d日 %H:%M:%S')}**（日本時間）")
+# 現在時刻の表示（日本時間）
+now = datetime.utcnow()
+jst = now.hour + 9
+jst_day = now.strftime('%Y-%m-%d')
+st.write(f"🕒 現在時刻（日本時間）: {jst_day} {jst%24:02d}:{now.minute:02d}")
 
-# 注意事項
-st.markdown("### 📌 注意事項")
-st.info("""
-- 本アプリはあくまで参考予想です。的中や損益を保証するものではありません。
-- 20歳未満の方は公営ギャンブルに参加できません。
-- 予想結果の利用は自己責任でお願いします。
-""")
+# 説明・注意事項
+with st.expander("📜 はじめにお読みください"):
+    st.markdown("""
+    - このアプリは **競艇・競馬・オート・競輪・ピスト6** のAI予想を目指して開発中です。
+    - 公式情報を元にした分析予想です。
+    - 将来的には高的中率AI・自動更新・カスタマイズ機能も搭載予定です。
+    """)
 
-# 同意チェック
-agree = st.checkbox("上記の注意事項に同意します")
-if agree:
-    st.success("✅ 同意が確認されました。以下から予想を開始してください。")
+    agree = st.checkbox("✅ 同意して使う")
+    if not agree:
+        st.stop()
 
-    st.markdown("### 🚀 予想したい競技を選んでください")
+# ボタンでページを選択
+st.subheader("🎮 予想カテゴリを選んでください")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("🛥 競艇"):
-            st.switch_page("pages/kyotei.py")
-        if st.button("🏍 オートレース"):
-            st.switch_page("pages/auto.py")
+col1, col2, col3 = st.columns(3)
+with col1:
+    if st.button("🎯 競艇"):
+        st.switch_page("pages/kyotei.py")
+with col2:
+    if st.button("🏇 競馬"):
+        st.switch_page("pages/keiba.py")
+with col3:
+    if st.button("🏍️ オートレース"):
+        st.switch_page("pages/auto.py")
 
-    with col2:
-        if st.button("🏇 競馬"):
-            st.switch_page("pages/keiba.py")
-        if st.button("🚲 競輪"):
-            st.switch_page("pages/keirin.py")
+col4, col5, _ = st.columns(3)
+with col4:
+    if st.button("🚴 競輪"):
+        st.switch_page("pages/keirin.py")
+with col5:
+    if st.button("🎽 PIST6"):
+        st.switch_page("pages/pist6.py")
 
-    with col3:
-        if st.button("⚡ ピストシックス"):
-            st.switch_page("pages/pist6.py")
-else:
-    st.warning("⚠️ 利用には注意事項への同意が必要です。")
-
-# フッター
 st.markdown("---")
-st.caption("制作：日本トップワールド 小島崇彦｜Powered by Streamlit")
+st.caption("制作：日本トップワールド 小島崇彦")
