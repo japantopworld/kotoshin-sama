@@ -62,3 +62,6 @@ else:
     st.success(predict(race["選手"]))
 
     st.caption("※ 現在は仮AIです。今後、本物のAI学習モデル（LightGBMなど）に進化予定。")
+print("📡 通信開始")  # ← 通信が始まったことを表示
+response = requests.get(BASE_URL, params=params, timeout=5)
+print("✅ 通信完了")  # ← 通信が終わったことを表示
