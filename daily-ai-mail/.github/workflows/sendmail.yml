@@ -1,4 +1,5 @@
 name: Send AI Predictions
+# ワークフローでAI予想を毎朝7時にメール送信
 
 # AI予想を毎朝7時にメール送信するGitHub Actions（←このコメントが認識のコツ！）
 on:
