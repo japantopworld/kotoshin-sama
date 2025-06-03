@@ -1,9 +1,10 @@
 name: Send AI Predictions
 
+# ワークフローでAI予想を毎朝7時にメール送信
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * *'  # JST 7:00 (GitHubはUTCなので-9時間)
+    - cron: '0 22 * * *'  # JST 7:00（GitHubはUTCなので-9時間）
 
 jobs:
   send_email:
