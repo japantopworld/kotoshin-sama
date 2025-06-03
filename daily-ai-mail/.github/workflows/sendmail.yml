@@ -1,15 +1,15 @@
-name: Send AI Predictions Email
+name: Send Daily AI Predictions
 
 on:
   schedule:
-    - cron: '0 22 * * *'  # 日本時間7:00はUTCで22:00
-  workflow_dispatch:  # 手動実行もできるように
+    - cron: '0 22 * * *'  # 日本時間7時 → UTCの22時
+  workflow_dispatch:      # 手動実行も可能にする
 
 jobs:
-  run-script:
+  send-email:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -20,6 +20,5 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run prediction mail script
+      - name: Run prediction and send email
         run: python daily-ai-mail/send_ai_predictions.py
-
