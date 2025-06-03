@@ -1,6 +1,6 @@
 name: Send AI Predictions
 
-# AI予想を毎朝7時にメール送信するGitHub Actions
+# AI予想を毎朝7時にメール送信するGitHub Actions（←このコメントが認識のコツ！）
 on:
   workflow_dispatch:
   schedule:
